@@ -2,10 +2,9 @@
 
 ## Prerequisites
 - Kubernetes cluster (kind / minikube / Docker Desktop) and `kubectl`
-- Note: `busyboxplus:curl` is no longer pullable (schema v1 manifest is not supported by containerd 2.1+), so `curlimages/curl:8.10.1` is used instead.
 
 ## Deploy
-
+All commands are run from the repository root
 1. Deploy the ToDo app and its ClusterIP service:
 ```bash
 kubectl apply -f .infrastructure/namespace.yml
