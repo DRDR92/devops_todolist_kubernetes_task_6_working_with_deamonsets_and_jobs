@@ -14,7 +14,8 @@ spec:
         spec:
           containers:
             - name: curl
-              image: curlimages/curl:8.10.1
+              image: busyboxplus:curl
+              imagePullPolicy: IfNotPresent
               command: ["/bin/sh", "-c"]
               args:
                 - |

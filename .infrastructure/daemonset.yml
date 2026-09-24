@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
         - name: curl
-          image: ikulyk404/busyboxplus:curl
+          image: busyboxplus:curl
+          imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c"]
           args:
             - |
