@@ -1,10 +1,12 @@
 # DaemonSet & CronJob for ToDo app
 
 ## Prerequisites
-- Kubernetes cluster (kind / minikube / Docker Desktop) and `kubectl`
+- Kubernetes cluster (kind / Docker Desktop) and `kubectl`
+- Docker CLI (to preload the `busyboxplus:curl` image)
 
 ## Deploy
-All commands are run from the repository root
+All commands are run from the repository root.
+
 1. Deploy the ToDo app and its ClusterIP service:
 ```bash
 kubectl apply -f .infrastructure/namespace.yml
@@ -14,7 +16,18 @@ kubectl get pods -n todoapp
 ```
 Wait until the app pod is `1/1 Running`.
 
-2. Create the `mateapp` namespace and deploy the DaemonSet and CronJob:
+2. Preload the `busyboxplus:curl` image into the cluster node.
+`busyboxplus:curl` is not available in the Docker Hub library, so it is taken from `ikulyk404/busyboxplus:curl` and retagged. Manifests use `imagePullPolicy: IfNotPresent`, so the node uses the local image.
+```bash
+docker pull ikulyk404/busyboxplus:curl
+docker tag ikulyk404/busyboxplus:curl busyboxplus:curl
+# Docker Desktop (kind) node:
+docker save busyboxplus:curl | docker exec -i desktop-control-plane ctr -n k8s.io images import -
+# or, for kind with a separate CLI:
+# kind load docker-image busyboxplus:curl
+```
+
+3. Create the `mateapp` namespace and deploy the DaemonSet and CronJob:
 ```bash
 kubectl apply -f .infrastructure/mateapp-namespace.yml
 kubectl apply -f .infrastructure/daemonset.yml
@@ -34,24 +47,4 @@ kubectl logs -n mateapp -l app=todoapp-curl --tail=5
 ```
 Expected output:
 ```
-Thu Sep 24 00:25:14 UTC 2026 200
-Thu Sep 24 00:25:19 UTC 2026 200
-Thu Sep 24 00:25:24 UTC 2026 200
-```
-
-3. CronJob logs (calls `/api/health` every 4 minutes):
-```bash
-kubectl get jobs -n mateapp
-kubectl logs -n mateapp job/<job-name>
-```
-Expected output:
-```
-Thu Sep 24 00:20:02 UTC 2026 checking health
-Health OK
-```
-
-To trigger the CronJob immediately without waiting:
-```bash
-kubectl create job --from=cronjob/todoapp-health health-manual -n mateapp
-kubectl logs -n mateapp job/health-manual
-```
+Thu Sep 24 00:25:14 UTC 2026
